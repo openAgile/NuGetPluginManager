@@ -1,4 +1,4 @@
-﻿namespace VersionOne.Web.PackageManager
+﻿namespace OpenAgile.NuGetPluginManager
 
 open System
 open NuGet
