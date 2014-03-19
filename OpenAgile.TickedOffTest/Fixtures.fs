@@ -4,22 +4,40 @@ open NUnit.Framework
 open System.IO
 open System.Reflection
 open TickSpec
+open OpenAgile.TickedOffTest
 
 let assembly = Assembly.GetExecutingAssembly() 
 let definitions = new StepDefinitions(assembly)
 
-/// Inherit from FeatureFixture to define a feature fixture
 [<AbstractClass>]
 [<TestFixture>]
-type FeatureFixture (source:string) =
-    [<Test>]
-    [<TestCaseSource("Scenarios")>]
-    member this.TestScenario (scenario:Scenario) =
-        if scenario.Tags |> Seq.exists ((=) "ignore") then
-            raise (new IgnoreException("Ignored: " + scenario.Name))
-        scenario.Action.Invoke()
-    member this.Scenarios =
-        let s = File.OpenText(Path.Combine(@"..\..\",source))
-        definitions.GenerateScenarios(source,s)
+type FeatureFixture<'St>(featureFile, getZero : unit -> 'St, perform : 'St -> StepSource -> 'St) = 
+  let feature = parse featureFile
 
-type Feature () = inherit FeatureFixture("StockFeature.txt")
+  let notIgnored (scenario:ScenarioSource) =
+    scenario.Tags |> Seq.exists ((=) "ignore") |> not
+
+  [<Test>]
+  [<TestCaseSource("Scenarios")>]
+  member this.TestScenario (scenario:ScenarioSource) =
+    let steps = scenario.Steps |> List.ofArray
+    let zero = getZero()
+    let result = steps |> List.scan perform zero
+    // Verbose:
+    //    let rec doit output steps =
+    //      match steps with
+    //      | [] -> output
+    //      | step :: more ->
+    //          let state = output |> List.head
+    //          let newstate = perform state step
+    //          let newoutput = newstate :: output
+    //          doit newoutput more
+    //    let steps = scenario.Steps |> List.ofArray
+    //    let zero = getZero
+    //    let result = doit [zero] steps
+    Assert.Pass(sprintf "Ran %d steps. Final state: %A" (steps |> List.length) result.Head)
+
+  member this.Scenarios = feature.Scenarios |> Seq.filter notIgnored
+
+
+
