@@ -22,8 +22,12 @@ type PackageInstalledModel = {
     IsInstalled : bool
 }
 
+//type getPackagesDel = delegate of unit -> IQueryable<IPackage>
+//type searchPackagesDel = delegate of (string * bool) -> IQueryable<IPackage>
+type getPackages = unit -> IQueryable<IPackage>
+type searchPackages = (string * bool) -> IQueryable<IPackage>
 
-type NuGetPluginManager(packageFolder, installFolder, packageSearchPattern
+type NuGetPluginManager(packageFolder, installFolder, packageSearchPattern, getPackages : getPackages, searchPackages : searchPackages
 , remotePackageManager : IPackageManager, localPackageManager : IPackageManager) =
     let installMarker packageId packageVersion = installFolder + "\\" + packageId + "." + packageVersion + ".installed"
 
@@ -54,7 +58,7 @@ type NuGetPluginManager(packageFolder, installFolder, packageSearchPattern
 
     member x.ListPackages () =
         let allPackages = [ 
-            for repoPackage in remotePackageManager.SourceRepository.GetPackages() ->
+            for repoPackage in getPackages() ->
                 { 
                     Id = repoPackage.Id;
                     VersionString = repoPackage.Version.ToString();
@@ -79,7 +83,7 @@ type NuGetPluginManager(packageFolder, installFolder, packageSearchPattern
 
     member x.ListLatestPackageByPattern pattern =
         let allPackages = [ 
-            for repoPackage in remotePackageManager.SourceRepository.Search(pattern, false) ->
+            for repoPackage in searchPackages(pattern, false) -> //remotePackageManager.SourceRepository.Search(pattern, false) ->
                 { 
                     Id = repoPackage.Id;
                     VersionString = repoPackage.Version.ToString();
@@ -123,6 +127,8 @@ type NuGetPluginManager(packageFolder, installFolder, packageSearchPattern
         let allPackageRepositories = NuGet.AggregateRepository(allRepositories)
         let localPackageManager = NuGet.PackageManager(allPackageRepositories, packageFolder)
 
-        NuGetPluginManager(packageFolder, installFolder, packageSearchPattern, remotePackageManager, localPackageManager)
+        let sourceRepository = remotePackageManager.SourceRepository
+        NuGetPluginManager(packageFolder, installFolder, packageSearchPattern, sourceRepository.GetPackages, sourceRepository.Search
+        , remotePackageManager, localPackageManager)
 
     

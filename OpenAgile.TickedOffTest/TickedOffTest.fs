@@ -20,8 +20,8 @@ module internal TextReader =
     
 [<AutoOpen>]
 module Parser =
-    let parse source =    
-        let ass = Assembly.GetExecutingAssembly()
+    let parse source (ass: Assembly) =    
+        //let ass = Assembly.GetExecutingAssembly()
         let stream = ass.GetManifestResourceStream(source)
         use reader = new System.IO.StreamReader(stream)
         let lines = reader |> TextReader.ReadAllLines
@@ -86,32 +86,32 @@ module Helpers =
     return JObject.Parse body
     }
 
-module Runner =
-    open System
-
-    let tryStep f acc (step,line) =
-        let print color =
-            let old = Console.ForegroundColor
-            Console.ForegroundColor <- color
-            printfn "%s" (line.Text.Trim())
-            Console.ForegroundColor <- old
-        try 
-            let acc = f acc (step,line)
-            print ConsoleColor.Green
-            acc
-        with e ->
-            print ConsoleColor.Red
-            printfn "%A" e
-            reraise ()
-
-    let run feature f init =
-        let feature = parse feature
-        feature.Scenarios
-        |> Seq.filter (fun scenario -> scenario.Tags |> Seq.exists ((=) "ignore") |> not) 
-        |> Seq.iter (fun scenario ->
-            scenario.Steps |> Array.scan (tryStep f) init
-            |> ignore
-        )
-        System.Console.ReadLine () |> ignore
+//module Runner =
+//    open System
+//
+//    let tryStep f acc (step,line) =
+//        let print color =
+//            let old = Console.ForegroundColor
+//            Console.ForegroundColor <- color
+//            printfn "%s" (line.Text.Trim())
+//            Console.ForegroundColor <- old
+//        try 
+//            let acc = f acc (step,line)
+//            print ConsoleColor.Green
+//            acc
+//        with e ->
+//            print ConsoleColor.Red
+//            printfn "%A" e
+//            reraise ()
+//
+//    let run feature f init =
+//        let feature = parse feature
+//        feature.Scenarios
+//        |> Seq.filter (fun scenario -> scenario.Tags |> Seq.exists ((=) "ignore") |> not) 
+//        |> Seq.iter (fun scenario ->
+//            scenario.Steps |> Array.scan (tryStep f) init
+//            |> ignore
+//        )
+//        System.Console.ReadLine () |> ignore
         
     //do run "Addition.txt" (AdditionSteps.performStep) (Calculator.Create ())
