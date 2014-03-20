@@ -19,10 +19,16 @@ let makePackages (plugins : string) =
             let name = parts.[0]
             let version = parts.[1]
 
+            let description = "Standard module desc"
+            let releaseNote = "Yeah, release notes"
+
             let pkg = 
                 Mock<NuGet.IPackage>()
                     .Setup(fun x -> <@ x.Id @>).Returns(name)
                     .Setup(fun x -> <@ x.Version @>).Returns(NuGet.SemanticVersion(version))
+                    .Setup(fun x -> <@ x.Description @>).Returns(description)
+                    .Setup(fun x -> <@ x.ReleaseNotes @>).Returns(releaseNote)
+                    .Setup(fun x -> <@ x.Authors @>).Returns([])
                     .Create()
             pkg
         ] |> Queryable.AsQueryable
@@ -43,6 +49,7 @@ type State = {
     AvailablePackages : IQueryable<NuGet.IPackage>
     InstalledPackages : IQueryable<NuGet.IPackage>
     PluginManager : NuGetPluginManager
+    FoundPlugins : IDictionary<String, IOrderedEnumerable<PackageModel>>
   }
     with static member Create () = 
             let availablePackages = makePackages String.Empty
@@ -51,6 +58,7 @@ type State = {
                 AvailablePackages = availablePackages
                 InstalledPackages = installedPackages
                 PluginManager = makePluginManager installedPackages availablePackages
+                FoundPlugins = null
             }
             state
 
@@ -61,7 +69,10 @@ let performStep (state:State) (step, line:LineSource) =
     | Given "no plugins currently installed" [] ->
         { state with InstalledPackages = makePackages String.Empty }
     | When "requesting the list of available plugins" [] ->
-        { state with PluginManager = makePluginManager state.InstalledPackages state.AvailablePackages  }
+        let pluginManager = makePluginManager state.InstalledPackages state.AvailablePackages
+        let foundPlugins = pluginManager.ListPackages()
+        { state with PluginManager = pluginManager; FoundPlugins = foundPlugins }
+
     | Then "I should see (.*)" [pluginList] ->
         let expectedPlugins = makePackages pluginList
         // TODO better way:
