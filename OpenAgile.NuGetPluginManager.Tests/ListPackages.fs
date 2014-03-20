@@ -7,7 +7,7 @@ open System
 open NuGetPluginManagerSetup
 
 [<TestFixture>]
-type ListPackages_when_two_versions_of_the_same_package_are_in_remote_repository() =
+type When_two_versions_of_the_same_package_are_in_remote_repository_ListPackages() =
     // Implicit setup?
     let packageId = "MyApp.Awesome.Plugin.BinFoo"
     let newestVersion = "100.0.0.0"
@@ -21,17 +21,17 @@ type ListPackages_when_two_versions_of_the_same_package_are_in_remote_repository
     let groupedPackages = subject.ListPackages()
 
     [<Test>]
-    member t.found_one_grouping() =
+    member t.returns_one_package_group() =
         Assert.AreEqual(1, groupedPackages.Count)
 
     [<Test>]
-    member t.found_correct_package() =
+    member t.returns_the_correct_package_group() =
         let packageGroup = groupedPackages.[packageId]
         let package = Seq.nth 0 packageGroup
         Assert.AreEqual(packageId, package.Id)
 
     [<Test>]
-    member t.packages_sorted_with_most_recent_at_top() =
+    member t.returns_the_distinct_package_versions_with_most_recent_first() =
         let packageGroup = groupedPackages.[packageId]
         let v2 = Seq.nth 0 packageGroup
         let v1 = Seq.nth 1 packageGroup
