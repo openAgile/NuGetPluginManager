@@ -54,6 +54,8 @@
     <Compile Include="MangePlugins.Steps.fs" />
     <None Include="packages.config" />
     <None Include="Foq.Usage.fsx" />
+    <Compile Include="NuGetPluginManagerSetup.fs" />
+    <Compile Include="ListPackages.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Foq">
