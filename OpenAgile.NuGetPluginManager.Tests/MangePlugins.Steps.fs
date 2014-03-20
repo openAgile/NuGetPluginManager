@@ -9,6 +9,7 @@ open System.Collections.Generic
 open System.Collections
 open System
 open Foq
+open NuGet
 
 let makePackages (plugins : string) =  
     if String.IsNullOrWhiteSpace(plugins) then 
@@ -33,17 +34,36 @@ let makePackages (plugins : string) =
             pkg
         ] |> Queryable.AsQueryable
 
-let makePluginManager installedPackages availablePackages =
-    let remotePackagegManager = Mock<NuGet.IPackageManager>().Create()
-    let localPackageManager = Mock<NuGet.IPackageManager>().Create()
-    NuGetPluginManager("", "", "MyApp.Awesome.Plugin."
-        , (fun () -> availablePackages )
-        , (fun (pattern, allowPrelease) -> query {
-                for package in availablePackages do
+let makePluginManager (installedPackages : IQueryable<IPackage>) (availablePackages : IQueryable<IPackage>) =    
+    let searchPackages = (fun (pattern, allowPrelease) -> query {
+                for package in installedPackages do
                 where (package.Id.StartsWith pattern)
                 select package
             })
-        , remotePackagegManager, localPackageManager)
+    
+    let findInstalledPackage (fileName : string) =
+        Seq.exists (fun (x : IPackage) -> fileName.Contains(x.Id)) installedPackages
+    
+    let fileSystem = 
+        Mock<IFileSystem>()
+            .Setup(fun x -> <@ x.FileExists(any()) @>).Calls<string>(findInstalledPackage)
+            .Create()
+
+    let fakeRepository = 
+        Mock<NuGet.IPackageRepository>()
+            .Setup(fun x -> <@ x.GetPackages() @>).Returns(availablePackages)
+            //SW.Setup(fun x -> <@ x.Search(any(), any()) @>).Calls<string * bool>(searchPackages)
+            .Create()
+
+    let remotePackagegManager = 
+        Mock<NuGet.IPackageManager>()
+            .Setup(fun x -> <@ x.SourceRepository @>).Returns(fakeRepository)
+            .Create()
+    
+    let localPackageManager = Mock<NuGet.IPackageManager>().Create()
+    
+    NuGetPluginManager("", "", "MyApp.Awesome.Plugin."
+        ,fileSystem, remotePackagegManager, localPackageManager)
         
 type State = { 
     AvailablePackages : IQueryable<NuGet.IPackage>

@@ -22,25 +22,31 @@ type PackageInstalledModel = {
     IsInstalled : bool
 }
 
-//type getPackagesDel = delegate of unit -> IQueryable<IPackage>
-//type searchPackagesDel = delegate of (string * bool) -> IQueryable<IPackage>
-type getPackages = unit -> IQueryable<IPackage>
-type searchPackages = (string * bool) -> IQueryable<IPackage>
-
-type NuGetPluginManager(packageFolder, installFolder, packageSearchPattern, getPackages : getPackages, searchPackages : searchPackages
-, remotePackageManager : IPackageManager, localPackageManager : IPackageManager) =
+type NuGetPluginManager(packageFolder, installFolder, packageSearchPattern, fileSystem : NuGet.IFileSystem
+    , remotePackageManager : IPackageManager, localPackageManager : IPackageManager) =
     let installMarker packageId packageVersion = installFolder + "\\" + packageId + "." + packageVersion + ".installed"
 
     let isInstalledInInstallFolder packageId packageVersion =
-        File.Exists(installFolder + "\\" + packageId + ".dll") && File.Exists(installMarker packageId packageVersion)
+        fileSystem.FileExists(installFolder + "\\" + packageId + ".dll") && fileSystem.FileExists(installMarker packageId packageVersion)
+        //File.Exists(installFolder + "\\" + packageId + ".dll") && File.Exists(installMarker packageId packageVersion)
                
     let copyModuleToInstallFolder packageId packageVersion = 
         let searchPattern = packageId + ".dll"
-        let moduleFolder = DirectoryInfo (packageFolder + "\\" + packageId + "." + packageVersion)
-        for file in moduleFolder.GetFiles(searchPattern, SearchOption.AllDirectories) do
-            let destinationFile = (installFolder + "\\" + file.Name)
-            file.CopyTo(destinationFile, true) |> ignore
-            File.Create(installMarker packageId packageVersion).Dispose()
+        let moduleFolder = packageFolder + "\\" + packageId + "." + packageVersion
+        for file in fileSystem.GetFiles(moduleFolder, searchPattern, true) do
+            let destinationFile = (installFolder + "\\" + file)
+            use moduleFileStream = fileSystem.OpenFile(file)
+            fileSystem.DeleteFile(destinationFile)
+            fileSystem.AddFile(destinationFile, moduleFileStream)
+            let fileInstallMarker = installMarker packageId packageVersion
+            let installMarkerContents = "installed"B
+            use installMarkerStream = new System.IO.MemoryStream(installMarkerContents)           
+            fileSystem.AddFile(fileInstallMarker, installMarkerStream)
+//        let moduleFolder = DirectoryInfo (packageFolder + "\\" + packageId + "." + packageVersion)
+//        for file in moduleFolder.GetFiles(searchPattern, SearchOption.AllDirectories) do
+//            let destinationFile = (installFolder + "\\" + file.Name)
+//            file.CopyTo(destinationFile, true) |> ignore
+//            File.Create(installMarker packageId packageVersion).Dispose()
 
     let deletePreviousInstallMarkers packageId = 
         let searchPattern = packageId + "*.installed"
@@ -58,7 +64,7 @@ type NuGetPluginManager(packageFolder, installFolder, packageSearchPattern, getP
 
     member x.ListPackages () =
         let allPackages = [ 
-            for repoPackage in getPackages() ->
+            for repoPackage in remotePackageManager.SourceRepository.GetPackages() ->
                 { 
                     Id = repoPackage.Id;
                     VersionString = repoPackage.Version.ToString();
@@ -83,7 +89,7 @@ type NuGetPluginManager(packageFolder, installFolder, packageSearchPattern, getP
 
     member x.ListLatestPackageByPattern pattern =
         let allPackages = [ 
-            for repoPackage in searchPackages(pattern, false) -> //remotePackageManager.SourceRepository.Search(pattern, false) ->
+            for repoPackage in remotePackageManager.SourceRepository.Search(pattern, false) ->
                 { 
                     Id = repoPackage.Id;
                     VersionString = repoPackage.Version.ToString();
@@ -114,7 +120,7 @@ type NuGetPluginManager(packageFolder, installFolder, packageSearchPattern, getP
         deleteModuleFromInstallFolder packageId packageVersion
         { Id = packageId; Version = packageVersion; IsInstalled = false }
 
-    static member Create packageFolder installFolder packageSearchPattern remotePackage remotePackageManagerRepositoryUrl (additionalPackageRepositoryUrls : IEnumerable<string>) =    
+    static member Create rootFolder packageFolder installFolder packageSearchPattern remotePackageManagerRepositoryUrl (additionalPackageRepositoryUrls : IEnumerable<string>) =    
         let mainPackageRepository = NuGet.PackageRepositoryFactory.Default.CreateRepository(remotePackageManagerRepositoryUrl)
         let remotePackageManager = NuGet.PackageManager(mainPackageRepository, packageFolder)
 
@@ -128,7 +134,10 @@ type NuGetPluginManager(packageFolder, installFolder, packageSearchPattern, getP
         let localPackageManager = NuGet.PackageManager(allPackageRepositories, packageFolder)
 
         let sourceRepository = remotePackageManager.SourceRepository
-        NuGetPluginManager(packageFolder, installFolder, packageSearchPattern, sourceRepository.GetPackages, sourceRepository.Search
-        , remotePackageManager, localPackageManager)
+        
+        let fileSystem = NuGet.PhysicalFileSystem(rootFolder)
+        
+        NuGetPluginManager(packageFolder, installFolder, packageSearchPattern, fileSystem
+            , remotePackageManager, localPackageManager)
 
     
