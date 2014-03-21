@@ -21,7 +21,7 @@ module public ListPackages =
 
     [<TestFixture>]
     [<Description("Unit test of the plugin manager when multiple versions of a single package exist in the remote NuGet Repository")>]
-    type when_two_versions_of_the_same_package_are_in_remote_repository() =
+    type ``when two versions of the same package are in remote repository``() =
         // Implicit setup?
         let packageId = "MyApp.Awesome.Plugin.BinFoo"
 
@@ -33,21 +33,21 @@ module public ListPackages =
         let groupedPackages = subject.ListPackages()
 
         [<Test>]
-        member It.returns_one_package_group() =
+        member It.``returns one package group``() =
             Assert.AreEqual(1, groupedPackages.Count)
 
         [<Test>]
-        member It.returns_the_correct_package_group() =
+        member It.``returns the correct package group``() =
             let packageGroup = groupedPackages.[packageId]
             let package = Seq.nth 0 packageGroup
             Assert.AreEqual(packageId, package.Id)
 
         [<Test>]
-        member It.returns_the_distinct_package_versions_with_most_recent_first() =
+        member It.``returns the distinct package versions with most recent first``() =
             AssertPackageOrderCorrect groupedPackages.[packageId]
 
     [<TestFixture>]
-    type when_two_versions_of_a_different_package_are_in_remote_repository() =
+    type ``when two versions of a different package are in remote repository``() =
         // Implicit setup?
         let packageBinFooId = "MyApp.Awesome.Plugin.BinFoo"
         let packageFubarId = "MyApp.Awesome.Plugin.Fubar"
@@ -64,11 +64,11 @@ module public ListPackages =
         let groupedPackages = subject.ListPackages()
 
         [<Test>]
-        member It.returns_two_package_groups() =
+        member It.``returns two package groups``() =
             Assert.AreEqual(2, groupedPackages.Count)
 
         [<Test>]
-        member It.returns_the_correct_package_groups() =
+        member It.``returns the correct package groups``() =
             let packageGroupBinFoo = groupedPackages.[packageBinFooId]
             let packageGroupFubar = groupedPackages.[packageFubarId]
             let packageBinFoo = Seq.nth 0 packageGroupBinFoo
@@ -77,7 +77,7 @@ module public ListPackages =
             Assert.AreEqual(packageFubarId, packageFubar.Id)
 
         [<Test>]
-        member It.returns_the_distinct_package_versions_with_most_recent_first() =
+        member It.``returns the distinct package versions with most recent first``() =
             // Test BinFoo ordering
             AssertPackageOrderCorrect groupedPackages.[packageBinFooId]
             // Test Fubar ordering
