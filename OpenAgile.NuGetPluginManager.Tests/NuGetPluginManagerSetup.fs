@@ -11,8 +11,7 @@ let trim (str : string) = str.Trim()
 let makePackages (plugins : string) =  
     if String.IsNullOrWhiteSpace(plugins) then 
         [] |> Queryable.AsQueryable
-    else
-          
+    else          
         [ for pluginDef in plugins.Split(',') ->
             let parts = pluginDef.Split('|')
             let name = trim parts.[0]

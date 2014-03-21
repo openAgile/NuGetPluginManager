@@ -33,17 +33,17 @@ module public ListPackages =
         let groupedPackages = subject.ListPackages()
 
         [<Test>]
-        member t.returns_one_package_group() =
+        member It.returns_one_package_group() =
             Assert.AreEqual(1, groupedPackages.Count)
 
         [<Test>]
-        member t.returns_the_correct_package_group() =
+        member It.returns_the_correct_package_group() =
             let packageGroup = groupedPackages.[packageId]
             let package = Seq.nth 0 packageGroup
             Assert.AreEqual(packageId, package.Id)
 
         [<Test>]
-        member t.returns_the_distinct_package_versions_with_most_recent_first() =
+        member It.returns_the_distinct_package_versions_with_most_recent_first() =
             AssertPackageOrderCorrect groupedPackages.[packageId]
 
     [<TestFixture>]
@@ -64,11 +64,11 @@ module public ListPackages =
         let groupedPackages = subject.ListPackages()
 
         [<Test>]
-        member t.returns_two_package_groups() =
+        member It.returns_two_package_groups() =
             Assert.AreEqual(2, groupedPackages.Count)
 
         [<Test>]
-        member t.returns_the_correct_package_groups() =
+        member It.returns_the_correct_package_groups() =
             let packageGroupBinFoo = groupedPackages.[packageBinFooId]
             let packageGroupFubar = groupedPackages.[packageFubarId]
             let packageBinFoo = Seq.nth 0 packageGroupBinFoo
@@ -77,7 +77,7 @@ module public ListPackages =
             Assert.AreEqual(packageFubarId, packageFubar.Id)
 
         [<Test>]
-        member t.returns_the_distinct_package_versions_with_most_recent_first() =
+        member It.returns_the_distinct_package_versions_with_most_recent_first() =
             // Test BinFoo ordering
             AssertPackageOrderCorrect groupedPackages.[packageBinFooId]
             // Test Fubar ordering
