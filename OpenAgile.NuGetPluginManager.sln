@@ -10,8 +10,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{5EA6DE
 		.nuget\packages.config = .nuget\packages.config
 	EndProjectSection
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "OpenAgile.TickedOffTest", "OpenAgile.TickedOffTest\OpenAgile.TickedOffTest.fsproj", "{B9F3D50A-492E-434E-B87E-01D3C717839E}"
-EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "OpenAgile.NuGetPluginManager.Tests", "OpenAgile.NuGetPluginManager.Tests\OpenAgile.NuGetPluginManager.Tests.fsproj", "{ABDD87C1-AF18-4C7A-A086-3A070ED6ACCB}"
 EndProject
 Global
@@ -24,10 +22,6 @@ Global
 		{F4748ABB-3EC5-4DEC-8C8E-872C200E53C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F4748ABB-3EC5-4DEC-8C8E-872C200E53C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F4748ABB-3EC5-4DEC-8C8E-872C200E53C8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B9F3D50A-492E-434E-B87E-01D3C717839E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B9F3D50A-492E-434E-B87E-01D3C717839E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B9F3D50A-492E-434E-B87E-01D3C717839E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B9F3D50A-492E-434E-B87E-01D3C717839E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{ABDD87C1-AF18-4C7A-A086-3A070ED6ACCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{ABDD87C1-AF18-4C7A-A086-3A070ED6ACCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ABDD87C1-AF18-4C7A-A086-3A070ED6ACCB}.Release|Any CPU.ActiveCfg = Release|Any CPU

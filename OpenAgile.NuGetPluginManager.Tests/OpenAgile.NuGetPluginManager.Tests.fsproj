@@ -50,8 +50,6 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <None Include="app.config" />
-    <EmbeddedResource Include="ManagePlugins.feature" />
-    <Compile Include="MangePlugins.Steps.fs" />
     <None Include="packages.config" />
     <None Include="Foq.Usage.fsx" />
     <Compile Include="NuGetPluginManagerSetup.fs" />
@@ -91,11 +89,6 @@
     <ProjectReference Include="..\OpenAgile.NuGetPluginManager.fsproj">
       <Name>OpenAgile.NuGetPluginManager</Name>
       <Project>{f4748abb-3ec5-4dec-8c8e-872c200e53c8}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\OpenAgile.TickedOffTest\OpenAgile.TickedOffTest.fsproj">
-      <Name>OpenAgile.TickedOffTest</Name>
-      <Project>{b9f3d50a-492e-434e-b87e-01d3c717839e}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
