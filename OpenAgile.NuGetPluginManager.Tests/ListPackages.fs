@@ -58,7 +58,7 @@ module public ListPackages =
         let groupedPackages = subject.ListPackages()
 
         [<Test>]
-        member It.``returns two package groups``() = groupedPackages |> should equal 2
+        member It.``returns two package groups``() = groupedPackages.Count |> should equal 2
 
         [<Test>]
         member It.``returns the correct package groups``() =
